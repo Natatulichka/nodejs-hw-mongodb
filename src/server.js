@@ -20,7 +20,7 @@ const setupServer = () => {
   );
   app.get('/', (req, res) => {
     res.json({
-      message: 'Welcome to Your Contacts App!',
+      message: 'Welcome to Your Homepage!',
     });
   });
   app.get('/contacts', async (req, res) => {
@@ -39,7 +39,9 @@ const setupServer = () => {
     try {
       const contact = await getContactById(contactId);
       if (contact === null) {
-        return res.status(404).send('Contact not found');
+        return res.status(404).json({
+          message: 'Contact not found',
+        });
       }
 
       res.status(200).json({
