@@ -1,14 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import { getAllContacts, getContactById } from './services/contacts.js';
 import env from './utils/env.js';
 import pinoHttp from 'pino-http';
-
+import contactRoutes from './routers/contacts.js';
+import greetingsRouter from './routers/greetings.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
 const PORT = Number(env('PORT', '3000'));
 const setupServer = () => {
   const app = express();
 
   app.use(express.json());
+  app.use('/contacts', contactRoutes);
+  app.use(greetingsRouter);
   app.use(cors());
 
   app.use(
@@ -18,55 +22,8 @@ const setupServer = () => {
       },
     }),
   );
-  app.get('/', (req, res) => {
-    res.json({
-      message: 'Welcome to Your Contacts App!',
-    });
-  });
-  app.get('/contacts', async (req, res) => {
-    const contacts = await getAllContacts();
-
-    res.status(200).json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: contacts,
-    });
-  });
-
-  app.get('/contacts/:contactId', async (req, res, next) => {
-    const { contactId } = req.params;
-
-    try {
-      const contact = await getContactById(contactId);
-      if (contact === null) {
-        return res.status(404).send('Contact not found');
-      }
-
-      res.status(200).json({
-        status: 200,
-        message: `Successfully found contact with id ${contactId}!`,
-        data: contact,
-      });
-    } catch (error) {
-      res.status(404).json({
-        message: 'Contact not found',
-        error: error.message,
-      });
-    }
-  });
-
-  app.use('*', (req, res, next) => {
-    res.status(404).json({
-      message: 'Not found',
-    });
-  });
-
-  app.use((err, req, res, next) => {
-    res.status(500).json({
-      message: 'Something went wrong',
-      error: err.message,
-    });
-  });
+  app.use('*', notFoundHandler);
+  app.use(errorHandler);
 
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
