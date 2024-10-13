@@ -29,5 +29,7 @@ const contactSchema = new Schema(
     versionKey: false,
   },
 );
+
 const Contact = model('Contact', contactSchema);
-export default Contact;
+
+export { Contact };

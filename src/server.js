@@ -6,11 +6,11 @@ import contactRoutes from './routers/contacts.js';
 import greetingsRouter from './routers/greetings.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
+
 const PORT = Number(env('PORT', '3000'));
 const setupServer = () => {
   const app = express();
 
-  app.use(express.json());
   app.use('/contacts', contactRoutes);
   app.use(greetingsRouter);
   app.use(cors());
@@ -22,7 +22,7 @@ const setupServer = () => {
       },
     }),
   );
-  app.use('*', notFoundHandler);
+  app.use(notFoundHandler);
   app.use(errorHandler);
 
   app.listen(PORT, () => {
