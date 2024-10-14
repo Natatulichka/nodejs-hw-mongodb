@@ -19,7 +19,7 @@ export async function getContactController(req, res, next) {
   const { id } = req.params;
   const contact = await getContact(id);
   if (contact === null) {
-    return next(new createHttpError.NotFound('Student not found'));
+    return next(new createHttpError.NotFound('Contact not found'));
   }
 
   res.json({
@@ -68,11 +68,7 @@ export async function deleteContactController(req, res, next) {
   if (contact === null) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
-  res.status(200).json({
-    status: 200,
-    message: 'Student deleted successfully',
-    data: contact,
-  });
+  res.status(204).send();
 }
 export async function patchContactController(req, res, next) {
   const { id } = req.params;
@@ -83,9 +79,9 @@ export async function patchContactController(req, res, next) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
 
-  res.json({
+  res.status(200).json({
     status: 200,
-    message: 'Contact updated successfully',
+    message: 'Successfully patched a contact!',
     data: editcontact,
   });
 }
