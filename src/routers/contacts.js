@@ -17,6 +17,6 @@ router.get('/', ctrlWrapper(getContactsController));
 router.get('/:id', ctrlWrapper(getContactController));
 router.post('/', jsonParser, ctrlWrapper(postContactsController));
 router.delete('/:id', ctrlWrapper(deleteContactController));
-router.patch('/:id', ctrlWrapper(patchContactController));
+router.patch('/:id', jsonParser, ctrlWrapper(patchContactController));
 
 export default router;

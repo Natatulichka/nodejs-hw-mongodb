@@ -29,7 +29,7 @@ export async function getContactController(req, res, next) {
   });
 }
 
-export const postContactsController = async (req, res, next) => {
+export async function postContactsController(req, res, next) {
   try {
     const { name, phoneNumber, email, isFavourite, contactType } = req.body;
 
@@ -59,9 +59,9 @@ export const postContactsController = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-};
+}
 
-export const deleteContactController = async (req, res, next) => {
+export async function deleteContactController(req, res, next) {
   const { id } = req.params;
   const contact = await deleteContact(id);
 
@@ -73,35 +73,19 @@ export const deleteContactController = async (req, res, next) => {
     message: 'Student deleted successfully',
     data: contact,
   });
-};
-
-// export const patchContactController = async (req, res, next) => {
-//   const { id } = req.params;
-//   const result = await changeContact(id, req.body);
-
-//   if (result === null) {
-//     return next(new createHttpError.NotFound('Contact not found'));
-//   }
-
-//   res.json({
-//     status: 200,
-//     message: 'Successfully updated a contact!',
-//     data: result,
-//   });
-// };
-
+}
 export async function patchContactController(req, res, next) {
   const { id } = req.params;
 
-  const result = await updateContact(id, req.body);
+  const editcontact = await updateContact(id, req.body);
 
-  if (result === null) {
+  if (editcontact === null) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
 
   res.json({
     status: 200,
     message: 'Contact updated successfully',
-    data: result,
+    data: editcontact,
   });
 }

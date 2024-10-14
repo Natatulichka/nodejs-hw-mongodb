@@ -16,16 +16,9 @@ export function deleteContact(id) {
   return Contact.findByIdAndDelete(id);
 }
 
-// export const changeContact = async (id, payload) => {
-//   const contact = await Contact.findOneAndUpdate(
-//     {
-//       _id: id,
-//     },
-//     payload,
-//     { new: true },
-//   );
-//   return contact;
-// };
-export function updateContact(id, payload) {
-  return Contact.findByIdAndUpdate(id, payload, { new: true });
+export function updateContact(id, payload, options = {}) {
+  return Contact.findOneAndUpdate({ _id: id }, payload, {
+    new: true,
+    ...options,
+  });
 }
