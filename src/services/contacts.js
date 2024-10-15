@@ -1,7 +1,48 @@
 import { Contact } from '../db/models/contacts.js';
+import calculatePaginationData from '../utils/calculatePaginationData.js';
 
-export function getAllContacts() {
-  return Contact.find();
+export async function getAllContacts({
+  filter,
+  page,
+  perPage,
+  sortBy,
+  sortOrder,
+}) {
+  const skip = page > 0 ? (page - 1) * perPage : 0;
+
+  console.log('Filters:', filter); // Логування фільтрів
+
+  const databaseQuery = Contact.find();
+  if (filter.contactType) {
+    databaseQuery.where('contactType').equals(filter.contactType);
+  }
+  if (filter.isFavourite !== undefined) {
+    databaseQuery.where('isFavourite').equals(filter.isFavourite);
+  }
+
+  const items = await databaseQuery
+    .skip(skip)
+    .limit(perPage)
+    .sort({ [sortBy]: sortOrder });
+
+  // Запит для підрахунку загальної кількості контактів
+  const totalItems = await Contact.countDocuments(databaseQuery.getQuery());
+
+  const { totalPages, hasNextPage, hasPrevPage } = calculatePaginationData({
+    totalItems,
+    perPage,
+    page,
+  });
+
+  return {
+    items,
+    totalItems,
+    page,
+    perPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+  };
 }
 
 export function getContact(id) {
