@@ -1,14 +1,13 @@
 import { isHttpError } from 'http-errors';
 
-export const errorHandler = (error, req, res) => {
+export const errorHandler = (error, req, res, next) => {
   // Перевірка, чи отримали ми помилку від createHttpError
   if (isHttpError(error) === true) {
-    return res
+    res
       .status(error.statusCode)
-      .json({ status: error.statusCode, message: error.message });
+      .json({ status: error.statusCode, message: error.name, data: error });
+    return;
   }
-
-  console.error(error);
 
   res.status(500).json({
     status: 500,
