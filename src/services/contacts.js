@@ -20,7 +20,7 @@ export async function getAllContacts({
     databaseQuery.where('isFavourite').equals(filter.isFavourite);
   }
 
-  const items = await databaseQuery
+  const data = await databaseQuery
     .skip(skip)
     .limit(perPage)
     .sort({ [sortBy]: sortOrder });
@@ -35,7 +35,7 @@ export async function getAllContacts({
   });
 
   return {
-    items,
+    data,
     totalItems,
     page,
     perPage,
