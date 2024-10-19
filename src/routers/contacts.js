@@ -8,11 +8,12 @@ import {
   postContactsController,
 } from '../controllers/controllerContacts.js';
 import { validateBody } from '../middlewares/validateBody.js';
+
+import isValidId from '../middlewares/isValidId.js';
 import {
   contactAddSchema,
   contactUpdateSchema,
-} from '../validation/students.js';
-import isValidId from '../middlewares/isValidId.js';
+} from '../validation/contacts.js';
 
 const router = express.Router();
 const jsonParser = express.json({
