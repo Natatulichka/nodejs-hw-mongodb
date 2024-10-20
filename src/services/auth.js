@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
+import crypto from 'node:crypto';
 import createHttpError from 'http-errors';
+
 import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
 import { ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL } from '../constants/index.js';
-import crypto from 'crypto';
 
 export async function registerUser(payload) {
   const maybeUser = await User.findOne({ email: payload.email });
@@ -32,13 +33,10 @@ export async function loginUser(email, password) {
 
   await Session.deleteOne({ userId: maybeUser._id });
 
-  const accessToken = crypto.randomBytes(30).toString('base64');
-  const refreshToken = crypto.randomBytes(30).toString('base64');
-
   return Session.create({
     userId: maybeUser._id,
-    accessToken,
-    refreshToken,
+    accessToken: crypto.randomBytes(30).toString('base64'),
+    refreshToken: crypto.randomBytes(30).toString('base64'),
     accessTokenValidUntil: new Date(Date.now() + ACCESS_TOKEN_TTL),
     refreshTokenValidUntil: new Date(Date.now() + REFRESH_TOKEN_TTL),
   });

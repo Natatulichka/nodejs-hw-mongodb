@@ -15,30 +15,33 @@ export async function getContactsController(req, res) {
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const filter = parseFilterParams(req.query);
 
-  const contacts = await getAllContacts({
+  const data = await getAllContacts({
     page,
     perPage,
     sortBy,
     sortOrder,
     filter,
+    // parentId: req.user._id,
   });
   res.json({
     status: 200,
     message: 'Sucessfully found contacts!',
-    data: contacts,
+    data,
   });
 }
 export async function getContactController(req, res, next) {
   const { id } = req.params;
-  const contact = await getContact(id);
-  if (contact === null) {
+  const data = await getContact(id);
+  if (data === null) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
-
+  // if (data.parentId.toString() !== req.user._id.toString()) {
+  //   return next(createHttpError.NotFound('Contact not found'));
+  // }
   res.json({
     status: 200,
     message: `Successfully found contact with id ${id}!`,
-    data: contact,
+    data,
   });
 }
 
@@ -57,19 +60,20 @@ export async function postContactsController(req, res, next) {
     }
 
     // Виклик сервісу для створення контакту
-    const contact = await postContacts({
+    const data = await postContacts({
       name,
       phoneNumber,
       email,
       isFavourite: isFavourite || false, // За замовчуванням false, якщо не передано
       contactType,
+      // userId: req.user._id,
     });
 
     // Відповідь з кодом 201 та даними створеного контакту
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
-      data: contact,
+      data,
     });
   } catch (err) {
     next(err);
@@ -78,12 +82,12 @@ export async function postContactsController(req, res, next) {
 
 export async function deleteContactController(req, res, next) {
   const { id } = req.params;
-  const contact = await deleteContact(id);
+  const data = await deleteContact(id);
 
-  if (contact === null) {
+  if (data === null) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
-  res.status(204).send();
+  res.status(204).json();
 }
 export async function patchContactController(req, res, next) {
   const { id } = req.params;
