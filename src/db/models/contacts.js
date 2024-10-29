@@ -23,10 +23,11 @@ const contactSchema = new Schema(
       required: true,
       default: 'personal',
     },
-    // parentId: {
-    //   type: Schema.Types.ObjectId,
-    //   required: true,
-    // },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+      required: true,
+    },
   },
   {
     timestamps: true,

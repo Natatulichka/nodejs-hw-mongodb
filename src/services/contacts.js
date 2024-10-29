@@ -6,6 +6,7 @@ export async function getAllContacts({
   perPage,
   sortBy,
   sortOrder,
+  userId,
 }) {
   const skip = page > 0 ? (page - 1) * perPage : 0;
 
@@ -16,7 +17,7 @@ export async function getAllContacts({
   if (filter.isFavourite !== undefined) {
     contactQuery.where('isFavourite').equals(filter.isFavourite);
   }
-  // contactQuery.where('parentId').equals(parentId);
+  contactQuery.where('userId').equals(userId);
   // Запит для підрахунку загальної кількості контактів
   const [total, data] = await Promise.all([
     Contact.countDocuments(contactQuery),
@@ -49,9 +50,10 @@ export function deleteContact(id) {
   return Contact.findByIdAndDelete(id);
 }
 
-export function updateContact(id, payload, options = {}) {
-  return Contact.findOneAndUpdate({ _id: id }, payload, {
+export function updateContact(id, userId, payload, options = {}) {
+  return Contact.findOneAndUpdate({ _id: id, userId }, payload, {
     new: true,
+    upsert: true,
     ...options,
   });
 }

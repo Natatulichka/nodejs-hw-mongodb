@@ -9,7 +9,8 @@ import authRoutes from './routers/auth.js';
 
 import { errorHandler } from './middlewares/errorHandler.js';
 import { notFoundHandler } from './middlewares/notFoundHandler.js';
-// import { auth } from './middlewares/auth.js';
+import { auth } from './middlewares/auth.js';
+
 import cookieParser from 'cookie-parser';
 
 const PORT = Number(env('PORT', '3000'));
@@ -21,7 +22,7 @@ const setupServer = () => {
 
   app.use(greetingsRouter);
   app.use('/auth', authRoutes);
-  app.use('/contacts', contactRoutes);
+  app.use('/contacts', auth, contactRoutes);
 
   app.use(
     pinoHttp({
