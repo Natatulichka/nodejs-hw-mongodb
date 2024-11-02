@@ -7,6 +7,12 @@ import {
   patchContactController,
   postContactsController,
 } from '../controllers/controllerContacts.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import {
+  contactAddSchema,
+  contactUpdateSchema,
+} from '../validation/students.js';
+import isValidId from '../middlewares/isValidId.js';
 
 const router = express.Router();
 const jsonParser = express.json({
@@ -14,9 +20,20 @@ const jsonParser = express.json({
 });
 
 router.get('/', ctrlWrapper(getContactsController));
-router.get('/:id', ctrlWrapper(getContactController));
-router.post('/', jsonParser, ctrlWrapper(postContactsController));
-router.delete('/:id', ctrlWrapper(deleteContactController));
-router.patch('/:id', jsonParser, ctrlWrapper(patchContactController));
+router.get('/:id', isValidId, ctrlWrapper(getContactController));
+router.post(
+  '/',
+  jsonParser,
+  validateBody(contactAddSchema),
+  ctrlWrapper(postContactsController),
+);
+router.delete('/:id', isValidId, ctrlWrapper(deleteContactController));
+router.patch(
+  '/:id',
+  isValidId,
+  jsonParser,
+  validateBody(contactUpdateSchema),
+  ctrlWrapper(patchContactController),
+);
 
 export default router;

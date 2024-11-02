@@ -6,9 +6,22 @@ import {
   deleteContact,
   updateContact,
 } from '../services/contacts.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
 
-export async function getContactsController(reg, res) {
-  const contacts = await getAllContacts();
+export async function getContactsController(req, res) {
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const filter = parseFilterParams(req.query);
+
+  const contacts = await getAllContacts({
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    filter,
+  });
   res.json({
     status: 200,
     message: 'Sucessfully found contacts!',
@@ -35,9 +48,11 @@ export async function postContactsController(req, res, next) {
 
     // Перевірка обов'язкових полів
     if (!name || !phoneNumber || !contactType) {
-      throw createHttpError(
-        400,
-        'Missing required fields: name, phoneNumber, and contactType are required',
+      return next(
+        new createHttpError(
+          400,
+          'Missing required fields: name, phoneNumber, and contactType are required',
+        ),
       );
     }
 
