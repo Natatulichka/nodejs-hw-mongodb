@@ -38,16 +38,19 @@ export async function getAllContacts({
   };
 }
 
-export function getContact(id) {
-  return Contact.findById(id);
+export function getContact(id, userId) {
+  return Contact.findOne({
+    _id: id,
+    userId,
+  });
 }
 
 export function postContacts(payload) {
   return Contact.create(payload);
 }
 
-export function deleteContact(id) {
-  return Contact.findByIdAndDelete(id);
+export function deleteContact(id, userId) {
+  return Contact.findOneAndDelete({ _id: id, userId });
 }
 
 export function updateContact(id, userId, payload, options = {}) {
