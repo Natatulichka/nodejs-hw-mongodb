@@ -1,5 +1,4 @@
 import { Contact } from '../db/models/contacts.js';
-import calculatePaginationData from '../utils/calculatePaginationData.js';
 
 export async function getAllContacts({
   filter,
@@ -7,59 +6,57 @@ export async function getAllContacts({
   perPage,
   sortBy,
   sortOrder,
+  userId,
 }) {
   const skip = page > 0 ? (page - 1) * perPage : 0;
 
-  console.log('Filters:', filter); // Логування фільтрів
-
-  const databaseQuery = Contact.find();
+  const contactQuery = Contact.find();
   if (filter.contactType) {
-    databaseQuery.where('contactType').equals(filter.contactType);
+    contactQuery.where('contactType').equals(filter.contactType);
   }
   if (filter.isFavourite !== undefined) {
-    databaseQuery.where('isFavourite').equals(filter.isFavourite);
+    contactQuery.where('isFavourite').equals(filter.isFavourite);
   }
-
-  const data = await databaseQuery
-    .skip(skip)
-    .limit(perPage)
-    .sort({ [sortBy]: sortOrder });
-
+  contactQuery.where('userId').equals(userId);
   // Запит для підрахунку загальної кількості контактів
-  const totalItems = await Contact.countDocuments(databaseQuery.getQuery());
-
-  const { totalPages, hasNextPage, hasPrevPage } = calculatePaginationData({
-    totalItems,
-    perPage,
-    page,
-  });
+  const [total, data] = await Promise.all([
+    Contact.countDocuments(contactQuery),
+    contactQuery
+      .skip(skip)
+      .limit(perPage)
+      .sort({ [sortBy]: sortOrder }),
+  ]);
+  const totalPages = Math.ceil(total / perPage);
 
   return {
     data,
-    totalItems,
+    totalItems: total,
     page,
     perPage,
-    totalPages,
-    hasNextPage,
-    hasPrevPage,
+    hasNextPage: page < totalPages,
+    hasPrevPage: page > 1,
   };
 }
 
-export function getContact(id) {
-  return Contact.findById(id);
+export function getContact(id, userId) {
+  return Contact.findOne({
+    _id: id,
+    userId,
+  });
 }
 
-export function postContacts(contact) {
-  return Contact.create(contact);
+export function postContacts(payload) {
+  return Contact.create(payload);
 }
 
-export function deleteContact(id) {
-  return Contact.findByIdAndDelete(id);
+export function deleteContact(id, userId) {
+  return Contact.findOneAndDelete({ _id: id, userId });
 }
 
-export function updateContact(id, payload, options = {}) {
-  return Contact.findOneAndUpdate({ _id: id }, payload, {
+export function updateContact(id, userId, payload, options = {}) {
+  return Contact.findOneAndUpdate({ _id: id, userId }, payload, {
     new: true,
+    upsert: true,
     ...options,
   });
 }

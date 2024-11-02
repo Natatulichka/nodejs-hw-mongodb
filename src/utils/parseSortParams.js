@@ -1,7 +1,7 @@
 import { SORT_ORDER } from '../constants/index.js';
 
-function parseSortBy(maybeSortBy) {
-  if (typeof maybeSortBy !== 'string') {
+function parseSortBy(value) {
+  if (typeof value !== 'string') {
     return '_id';
   }
   const keys = [
@@ -12,19 +12,18 @@ function parseSortBy(maybeSortBy) {
     'isFavourite',
     'contactType',
   ];
-  if (keys.includes(maybeSortBy)) {
-    return maybeSortBy;
+  if (keys.includes(value) !== true) {
+    return '_id';
   }
-
-  return '_id';
+  return value;
 }
-function parseSortOrder(maybeSortOrder) {
-  if (typeof maybeSortOrder !== 'string') {
+function parseSortOrder(value) {
+  if (typeof value !== 'string') {
     return SORT_ORDER.ASC;
   }
 
-  if ([SORT_ORDER.ASC, SORT_ORDER.DESC].includes(maybeSortOrder)) {
-    return maybeSortOrder;
+  if ([SORT_ORDER.ASC, SORT_ORDER.DESC].includes(value)) {
+    return value;
   }
 
   return SORT_ORDER.ASC;

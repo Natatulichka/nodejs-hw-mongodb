@@ -9,13 +9,14 @@ import {
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { Contact } from '../db/models/contacts.js';
 
 export async function getContactsController(req, res) {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
-  const filter = parseFilterParams(req.query);
-
-  const contacts = await getAllContacts({
+  const { _id: userId } = req.user;
+  const filter = { ...parseFilterParams(req.query), userId };
+  const data = await getAllContacts({
     page,
     perPage,
     sortBy,
@@ -25,20 +26,25 @@ export async function getContactsController(req, res) {
   res.json({
     status: 200,
     message: 'Sucessfully found contacts!',
-    data: contacts,
+    data,
   });
 }
+
 export async function getContactController(req, res, next) {
   const { id } = req.params;
-  const contact = await getContact(id);
-  if (contact === null) {
-    return next(new createHttpError.NotFound('Contact not found'));
-  }
+  const { _id: userId } = req.user; // Отримуємо ID авторизованого користувача
 
+  const data = await getContact(id, userId);
+  if (data === null) {
+    return next(createHttpError.NotFound('Contact not found'));
+  }
+  if (data.userId.toString() !== req.user._id.toString()) {
+    return next(createHttpError.NotFound('Contact not found'));
+  }
   res.json({
     status: 200,
     message: `Successfully found contact with id ${id}!`,
-    data: contact,
+    data,
   });
 }
 
@@ -57,19 +63,35 @@ export async function postContactsController(req, res, next) {
     }
 
     // Виклик сервісу для створення контакту
-    const contact = await postContacts({
+    const newContact = {
       name,
       phoneNumber,
       email,
       isFavourite: isFavourite || false, // За замовчуванням false, якщо не передано
       contactType,
-    });
+      userId: req.user._id, // Додаємо userId з авторизованого користувача
+    };
 
+    // Перевірка наявності дублікатів
+    const existingContact = await Contact.findOne({
+      name,
+      phoneNumber,
+      email,
+      userId: req.user._id, // Перевіряємо, чи контакт належить авторизованому користувачу
+    });
+    // Якщо контакт вже існує, повертаємо помилку
+    if (existingContact) {
+      return res.status(409).json({
+        message: 'Contact with this name and phone number already exists',
+      });
+    }
+    // Викликаємо сервіс для створення контакту
+    const data = await postContacts(newContact);
     // Відповідь з кодом 201 та даними створеного контакту
     res.status(201).json({
       status: 201,
       message: 'Successfully created a contact!',
-      data: contact,
+      data,
     });
   } catch (err) {
     next(err);
@@ -78,20 +100,30 @@ export async function postContactsController(req, res, next) {
 
 export async function deleteContactController(req, res, next) {
   const { id } = req.params;
-  const contact = await deleteContact(id);
+  const userId = req.user._id;
 
-  if (contact === null) {
+  const data = await deleteContact(id, userId);
+
+  if (data === null) {
     return next(new createHttpError.NotFound('Contact not found'));
   }
-  res.status(204).send();
+  res.status(200).json({
+    status: 200,
+    message: 'Contact deleted successfully',
+    data,
+  });
 }
 export async function patchContactController(req, res, next) {
   const { id } = req.params;
+  const userId = req.user._id;
 
-  const editcontact = await updateContact(id, req.body);
+  const editcontact = await updateContact(id, userId, req.body, {
+    new: true, // Повернути оновлений документ
+    runValidators: true, // Перевірка валідності перед оновленням
+  });
 
   if (editcontact === null) {
-    return next(new createHttpError.NotFound('Contact not found'));
+    return next(new createHttpError[404]('Failed to update contact'));
   }
 
   res.status(200).json({
