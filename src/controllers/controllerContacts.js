@@ -32,7 +32,7 @@ export async function getContactsController(req, res) {
 
 export async function getContactController(req, res, next) {
   const { id } = req.params;
-  const { _id: userId } = req.user; // Отримуємо ID авторизованого користувача
+  const { userId } = req.user._id; // Отримуємо ID авторизованого користувача
 
   const data = await getContact(id, userId);
   if (data === null) {

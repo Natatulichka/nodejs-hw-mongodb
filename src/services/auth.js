@@ -67,3 +67,11 @@ export async function refreshUserSession(sessionId, refreshToken) {
     refreshTokenValidUntil: new Date(Date.now() + REFRESH_TOKEN_TTL),
   });
 }
+
+export async function requestResetToken(email) {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+  console.log(user);
+}
