@@ -1,10 +1,18 @@
 import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
 import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import env from '../utils/env.js';
 
 import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
-import { ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL } from '../constants/index.js';
+import {
+  ACCESS_TOKEN_TTL,
+  // DOMAIN,
+  // JWT_SECRET,
+  REFRESH_TOKEN_TTL,
+  // SMTP,
+} from '../constants/index.js';
 
 export async function registerUser(payload) {
   const maybeUser = await User.findOne({ email: payload.email });
@@ -73,5 +81,69 @@ export async function requestResetToken(email) {
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
-  console.log(user);
+  console.log('Sending reset password email to:', user.email);
+  const resetToken = jwt.sign(
+    {
+      sub: user._id,
+      email,
+    },
+    env('JWT_SECRET'),
+    // {
+    //   expiresIn: 5 * 60, //5 minutes,
+    // },
+  );
+  console.log(resetToken);
+
+  // const resetLink = `${env(
+  //   DOMAIN.FRONTEND_DOMAIN,
+  // )}/auth/reset-password?token=${resetToken}`;
+
+  // try {
+  //   await sendMail({
+  //     to: email,
+  //     from: env(SMTP.SMTP_FROM),
+  //     html: generateResetPasswordEmail({
+  //       name: user.name,
+  //       resetLink: resetLink,
+  //     }),
+  //     subject: 'Reset your password!',
+  //   });
+  // } catch (err) {
+  //   console.log(err);
+  //   throw createHttpError(
+  //     500,
+  //     'Failed to send the email, please try again later.',
+  //   );
+  // }
 }
+
+// export const resetPassword = async ({ token, password }) => {
+//   let payload;
+//   try {
+//     payload = jwt.verify(token);
+//     // payload = jwt.verify(token, env(JWT_SECRET));
+//   } catch {
+//     throw createHttpError(401, 'Token is expired or invalid.');
+//   }
+//   const user = await User.findById(payload.sub);
+
+//   if (!user) {
+//     throw createHttpError(404, 'User not found!');
+//   }
+
+//   // Перевірка чи новий пароль відрізняється від старого
+//   const isSamePassword = await bcrypt.compare(password, user.password);
+//   if (isSamePassword) {
+//     throw createHttpError(
+//       400,
+//       'New password must be different from the old one.',
+//     );
+//   }
+
+//   const hashedPassword = await bcrypt.hash(password, 10);
+
+//   await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+
+//   // Видалення сесій після зміни пароля
+//   await Session.deleteOne({ userId: user._id });
+// };
