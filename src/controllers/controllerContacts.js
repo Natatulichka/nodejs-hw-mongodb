@@ -14,14 +14,14 @@ import { Contact } from '../db/models/contacts.js';
 export async function getContactsController(req, res) {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
-  const { _id: userId } = req.user;
-  const filter = { ...parseFilterParams(req.query), userId };
+  const filter = parseFilterParams(req.query);
   const data = await getAllContacts({
     page,
     perPage,
     sortBy,
     sortOrder,
     filter,
+    userId: req.user._id,
   });
   res.json({
     status: 200,
@@ -32,7 +32,7 @@ export async function getContactsController(req, res) {
 
 export async function getContactController(req, res, next) {
   const { id } = req.params;
-  const { _id: userId } = req.user; // Отримуємо ID авторизованого користувача
+  const userId = req.user._id; // Отримуємо ID авторизованого користувача
 
   const data = await getContact(id, userId);
   if (data === null) {
