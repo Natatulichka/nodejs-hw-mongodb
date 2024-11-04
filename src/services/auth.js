@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import env from '../utils/env.js';
-
+// import handlebars from 'handlebars';
 import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
 import {
@@ -11,8 +11,9 @@ import {
   // DOMAIN,
   // JWT_SECRET,
   REFRESH_TOKEN_TTL,
-  // SMTP,
+  SMTP,
 } from '../constants/index.js';
+import { sendMail } from '../utils/sendMail.js';
 
 export async function registerUser(payload) {
   const maybeUser = await User.findOne({ email: payload.email });
@@ -81,19 +82,31 @@ export async function requestResetToken(email) {
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
-  console.log('Sending reset password email to:', user.email);
+
   const resetToken = jwt.sign(
     {
       sub: user._id,
       email,
     },
     env('JWT_SECRET'),
-    // {
-    //   expiresIn: 5 * 60, //5 minutes,
-    // },
+    {
+      expiresIn: 5 * 60, //5 minutes,
+    },
   );
   console.log(resetToken);
+  // const html = handlebars.compile(RESET_PASSWORD_TEMPLATE);
+  try {
+    sendMail({
+      from: env(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset your password',
+      html: `<p>Click <a href="${resetToken}">here</a> to reset your password!</p>`,
+    });
+  } catch (error) {
+    console.error(error);
 
+    throw createHttpError(500, 'Cannot sent email');
+  }
   // const resetLink = `${env(
   //   DOMAIN.FRONTEND_DOMAIN,
   // )}/auth/reset-password?token=${resetToken}`;
