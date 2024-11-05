@@ -9,8 +9,8 @@ import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
 import {
   ACCESS_TOKEN_TTL,
-  // DOMAIN,
-  // JWT_SECRET,
+  //  DOMAIN,
+  JWT_SECRET,
   REFRESH_TOKEN_TTL,
   SMTP,
   TEMPLATES_PATH,
@@ -148,33 +148,32 @@ export async function requestResetToken(email) {
   // }
 }
 
-// export const resetPassword = async ({ token, password }) => {
-//   let payload;
-//   try {
-//     payload = jwt.verify(token);
-//     // payload = jwt.verify(token, env(JWT_SECRET));
-//   } catch {
-//     throw createHttpError(401, 'Token is expired or invalid.');
-//   }
-//   const user = await User.findById(payload.sub);
+export const resetPassword = async ({ token, password }) => {
+  let payload;
+  try {
+    payload = jwt.verify(token, env(JWT_SECRET));
+  } catch {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+  const user = await User.findById(payload.sub);
 
-//   if (!user) {
-//     throw createHttpError(404, 'User not found!');
-//   }
+  if (!user) {
+    throw createHttpError(404, 'User not found!');
+  }
 
-//   // Перевірка чи новий пароль відрізняється від старого
-//   const isSamePassword = await bcrypt.compare(password, user.password);
-//   if (isSamePassword) {
-//     throw createHttpError(
-//       400,
-//       'New password must be different from the old one.',
-//     );
-//   }
+  // Перевірка чи новий пароль відрізняється від старого
+  const isSamePassword = await bcrypt.compare(password, user.password);
+  if (isSamePassword) {
+    throw createHttpError(
+      400,
+      'New password must be different from the old one.',
+    );
+  }
 
-//   const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-//   await User.findByIdAndUpdate(user._id, { password: hashedPassword });
+  await User.findByIdAndUpdate(user._id, { password: hashedPassword });
 
-//   // Видалення сесій після зміни пароля
-//   await Session.deleteOne({ userId: user._id });
-// };
+  // Видалення сесій після зміни пароля
+  await Session.deleteOne({ userId: user._id });
+};

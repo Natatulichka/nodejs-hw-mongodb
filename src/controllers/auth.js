@@ -4,7 +4,7 @@ import {
   refreshUserSession,
   registerUser,
   requestResetToken,
-  // resetPassword,
+  resetPassword,
 } from '../services/auth.js';
 
 export async function registerController(req, res) {
@@ -92,12 +92,12 @@ export async function requestResetEmailController(req, res) {
   });
 }
 
-// export const resetPasswordController = async (req, res) => {
-//   await resetPassword(req.body);
+export const resetPasswordController = async (req, res) => {
+  await resetPassword(req.body);
 
-//   res.json({
-//     status: 200,
-//     message: 'Password has been successfully reset!',
-//     data: {},
-//   });
-// };
+  res.json({
+    status: 200,
+    message: 'Password has been successfully reset!',
+    data: {},
+  });
+};
