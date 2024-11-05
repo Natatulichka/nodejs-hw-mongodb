@@ -3,7 +3,8 @@ import crypto from 'node:crypto';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import env from '../utils/env.js';
-// import handlebars from 'handlebars';
+import fs from 'node:fs/promises';
+import handlebars from 'handlebars';
 import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
 import {
@@ -12,8 +13,10 @@ import {
   // JWT_SECRET,
   REFRESH_TOKEN_TTL,
   SMTP,
+  TEMPLATES_PATH,
 } from '../constants/index.js';
 import { sendMail } from '../utils/sendMail.js';
+import path from 'node:path';
 
 export async function registerUser(payload) {
   const maybeUser = await User.findOne({ email: payload.email });
@@ -90,17 +93,32 @@ export async function requestResetToken(email) {
     },
     env('JWT_SECRET'),
     {
-      expiresIn: 5 * 60, //5 minutes,
+      expiresIn: 15 * 60, //15 minutes,
     },
   );
   console.log(resetToken);
   // const html = handlebars.compile(RESET_PASSWORD_TEMPLATE);
+  const resetPasswordTemplatePath = path.join(
+    TEMPLATES_PATH,
+    'reset-password-email.html',
+  );
+
+  const templateSource = (
+    await fs.readFile(resetPasswordTemplatePath)
+  ).toString();
+
+  const template = handlebars.compile(templateSource);
+  const html = template({
+    name: user.name,
+    resetLink: `${env('FRONTEND_DOMAIN')}/reset-password?token=${resetToken}`,
+  });
+
   try {
     sendMail({
       from: env(SMTP.SMTP_FROM),
       to: email,
       subject: 'Reset your password',
-      html: `<p>Click <a href="${resetToken}">here</a> to reset your password!</p>`,
+      html,
     });
   } catch (error) {
     console.error(error);

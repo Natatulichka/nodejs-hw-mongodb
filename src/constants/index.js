@@ -1,3 +1,4 @@
+import path from 'node:path';
 export const SORT_ORDER = {
   ASC: 'asc',
   DESC: 'desc',
@@ -21,3 +22,5 @@ export const DOMAIN = {
   FRONTEND_DOMAIN: 'FRONTEND_DOMAIN',
   BACKEND_DOMAIN: 'BACKEND_DOMAIN',
 };
+
+export const TEMPLATES_PATH = path.join(process.cwd(), 'src', 'templates');
