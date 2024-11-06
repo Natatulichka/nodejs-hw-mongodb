@@ -97,7 +97,6 @@ export async function requestResetToken(email) {
     },
   );
 
-  // const html = handlebars.compile(RESET_PASSWORD_TEMPLATE);
   const resetPasswordTemplatePath = path.join(
     TEMPLATES_PATH,
     'reset-password-email.html',
@@ -121,29 +120,11 @@ export async function requestResetToken(email) {
       html,
     });
   } catch {
-    throw createHttpError(500, 'Cannot sent email');
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
   }
-  // const resetLink = `${env(
-  //   DOMAIN.FRONTEND_DOMAIN,
-  // )}/auth/reset-password?token=${resetToken}`;
-
-  // try {
-  //   await sendMail({
-  //     to: email,
-  //     from: env(SMTP.SMTP_FROM),
-  //     html: generateResetPasswordEmail({
-  //       name: user.name,
-  //       resetLink: resetLink,
-  //     }),
-  //     subject: 'Reset your password!',
-  //   });
-  // } catch (err) {
-  //   console.log(err);
-  //   throw createHttpError(
-  //     500,
-  //     'Failed to send the email, please try again later.',
-  //   );
-  // }
 }
 
 export const resetPassword = async ({ token, password }) => {

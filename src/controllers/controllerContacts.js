@@ -10,6 +10,9 @@ import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
 import { Contact } from '../db/models/contacts.js';
+import env from '../utils/env.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
 
 export async function getContactsController(req, res) {
   const { page, perPage } = parsePaginationParams(req.query);
@@ -62,7 +65,16 @@ export async function postContactsController(req, res, next) {
         ),
       );
     }
+    const photo = req.file;
+    let photoUrl;
 
+    if (photo) {
+      if (env('ENABLE_CLOUDINARY') === 'true') {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+    }
     // Виклик сервісу для створення контакту
     const newContact = {
       name,
@@ -70,6 +82,7 @@ export async function postContactsController(req, res, next) {
       email,
       isFavourite: isFavourite || false, // За замовчуванням false, якщо не передано
       contactType,
+      photo: photoUrl,
       userId: req.user._id, // Додаємо userId з авторизованого користувача
     };
 
@@ -117,6 +130,22 @@ export async function deleteContactController(req, res, next) {
 export async function patchContactController(req, res, next) {
   const { id } = req.params;
   const userId = req.user._id;
+  const photo = req.file;
+
+  let photoUrl;
+
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  // Оновлюємо req.body, щоб додати photoUrl, якщо воно є
+  if (photoUrl) {
+    req.body.photo = photoUrl;
+  }
 
   const editcontact = await updateContact(id, userId, req.body, {
     new: true, // Повернути оновлений документ

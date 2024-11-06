@@ -12,6 +12,7 @@ import { notFoundHandler } from './middlewares/notFoundHandler.js';
 import { auth } from './middlewares/auth.js';
 
 import cookieParser from 'cookie-parser';
+import { UPLOAD_DIR } from './constants/index.js';
 
 const PORT = Number(env('PORT', '3000'));
 
@@ -23,6 +24,7 @@ const setupServer = () => {
   app.use(greetingsRouter);
   app.use('/auth', authRoutes);
   app.use('/contacts', auth, contactRoutes);
+  app.use('/uploads', express.static(UPLOAD_DIR));
 
   app.use(
     pinoHttp({
