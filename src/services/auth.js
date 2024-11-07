@@ -9,7 +9,6 @@ import { Session } from '../db/models/session.js';
 import User from '../db/models/user.js';
 import {
   ACCESS_TOKEN_TTL,
-  //  DOMAIN,
   JWT_SECRET,
   REFRESH_TOKEN_TTL,
   SMTP,
@@ -109,7 +108,7 @@ export async function requestResetToken(email) {
   const template = handlebars.compile(templateSource);
   const html = template({
     name: user.name,
-    resetLink: `${env('FRONTEND_DOMAIN')}/reset-password?token=${resetToken}`,
+    resetLink: `${env('FRONTEND_DOMAIN')}/reset-pwd?token=${resetToken}`,
   });
 
   try {
