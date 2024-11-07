@@ -5,7 +5,6 @@ import {
   registerSchema,
   requestResetEmailSchema,
   resetPasswordValidationSchema,
-  // resetPasswordValidationSchema,
 } from '../validation/auth.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import {
@@ -15,7 +14,7 @@ import {
   registerController,
   requestResetEmailController,
   resetPasswordController,
-  // resetPasswordController,
+  getOAuthURLController,
 } from '../controllers/auth.js';
 const router = express.Router();
 const jsonParser = express.json();
@@ -49,4 +48,5 @@ router.post(
   validateBody(resetPasswordValidationSchema),
   ctrlWrapper(resetPasswordController),
 );
+router.get('/get-oauth-url', ctrlWrapper(getOAuthURLController));
 export default router;

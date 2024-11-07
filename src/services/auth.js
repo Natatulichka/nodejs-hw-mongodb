@@ -108,7 +108,7 @@ export async function requestResetToken(email) {
   const template = handlebars.compile(templateSource);
   const html = template({
     name: user.name,
-    resetLink: `${env('FRONTEND_DOMAIN')}/reset-pwd?token=${resetToken}`,
+    resetLink: `${env('FRONTEND_DOMAIN')}/reset-password?token=${resetToken}`,
   });
 
   try {

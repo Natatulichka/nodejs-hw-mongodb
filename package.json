@@ -5,6 +5,9 @@
   "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "build": "npm run build-docs",
+    "build-docs": "redocly bundle --ext json -o docs/swagger.json",
+    "preview-docs": "redocly preview-docs",
     "lint": "eslint src/**/*.js",
     "start": "node ./src/index.js",
     "dev": "nodemon src/index.js"
@@ -20,6 +23,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "google-auth-library": "^9.14.2",
     "handlebars": "^4.7.8",
     "http-errors": "^2.0.0",
     "joi": "^17.13.3",
@@ -32,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
+    "@redocly/cli": "^1.25.11",
     "eslint": "^9.12.0",
     "globals": "^15.11.0",
     "nodemon": "^3.1.7",

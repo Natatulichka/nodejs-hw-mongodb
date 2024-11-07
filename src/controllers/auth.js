@@ -6,6 +6,7 @@ import {
   requestResetToken,
   resetPassword,
 } from '../services/auth.js';
+import { generateOAuthUrl } from '../utils/googleOAuth2.js';
 
 export async function registerController(req, res) {
   const payload = {
@@ -101,3 +102,13 @@ export const resetPasswordController = async (req, res) => {
     data: {},
   });
 };
+
+export async function getOAuthURLController(req, res) {
+  const url = generateOAuthUrl();
+
+  res.send({
+    status: 200,
+    message: 'Successfully get Google OAuth URL',
+    data: url,
+  });
+}
