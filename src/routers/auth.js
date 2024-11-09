@@ -1,6 +1,7 @@
 import express from 'express';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import {
+  confirmOAuthSchema,
   loginSchema,
   registerSchema,
   requestResetEmailSchema,
@@ -15,6 +16,7 @@ import {
   requestResetEmailController,
   resetPasswordController,
   getOAuthURLController,
+  confirmOAuthController,
 } from '../controllers/auth.js';
 const router = express.Router();
 const jsonParser = express.json();
@@ -49,4 +51,10 @@ router.post(
   ctrlWrapper(resetPasswordController),
 );
 router.get('/get-oauth-url', ctrlWrapper(getOAuthURLController));
+router.post(
+  '/confirm-oauth',
+  jsonParser,
+  validateBody(confirmOAuthSchema),
+  ctrlWrapper(confirmOAuthController),
+);
 export default router;

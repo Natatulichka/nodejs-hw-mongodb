@@ -20,3 +20,7 @@ export const resetPasswordValidationSchema = Joi.object({
 export const requestResetEmailSchema = Joi.object({
   email: Joi.string().pattern(emailRegexp).required(),
 });
+
+export const confirmOAuthSchema = Joi.object({
+  code: Joi.string().required(),
+});

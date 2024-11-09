@@ -5,8 +5,9 @@ import {
   registerUser,
   requestResetToken,
   resetPassword,
+  loginOrRegisterUser,
 } from '../services/auth.js';
-import { generateOAuthUrl } from '../utils/googleOAuth2.js';
+import { generateOAuthUrl, validateCode } from '../utils/googleOAuth2.js';
 
 export async function registerController(req, res) {
   const payload = {
@@ -110,5 +111,34 @@ export async function getOAuthURLController(req, res) {
     status: 200,
     message: 'Successfully get Google OAuth URL',
     data: url,
+  });
+}
+
+export async function confirmOAuthController(req, res) {
+  const { code } = req.body;
+  // Виклик функції validateCode для валідації коду та отримання токену
+  const ticket = await validateCode(code);
+
+  const session = await loginOrRegisterUser({
+    email: ticket.payload.email,
+    name: ticket.payload.name,
+  });
+
+  res.cookie('refreshToken', session.refreshToken, {
+    httpOnly: true,
+    expires: session.refreshTokenValidUntil,
+  });
+
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: session.refreshTokenValidUntil,
+  });
+
+  res.send({
+    status: 200,
+    message: 'Login with Google successfully',
+    data: {
+      accessToken: session.accessToken,
+    },
   });
 }

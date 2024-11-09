@@ -18,9 +18,9 @@ import { sendMail } from '../utils/sendMail.js';
 import path from 'node:path';
 
 export async function registerUser(payload) {
-  const maybeUser = await User.findOne({ email: payload.email });
+  const user = await User.findOne({ email: payload.email });
 
-  if (maybeUser !== null) {
+  if (user !== null) {
     throw createHttpError(409, 'Email already in user');
   }
 
@@ -30,22 +30,22 @@ export async function registerUser(payload) {
 }
 
 export async function loginUser(email, password) {
-  const maybeUser = await User.findOne({ email });
+  const user = await User.findOne({ email });
 
-  if (maybeUser === null) {
+  if (user === null) {
     throw createHttpError(404, 'User not found');
   }
 
-  const isMatch = await bcrypt.compare(password, maybeUser.password);
+  const isMatch = await bcrypt.compare(password, user.password);
 
   if (isMatch === false) {
     throw createHttpError(401, 'Unauthorized');
   }
 
-  await Session.deleteOne({ userId: maybeUser._id });
+  await Session.deleteOne({ userId: user._id });
 
   return Session.create({
-    userId: maybeUser._id,
+    userId: user._id,
     accessToken: crypto.randomBytes(30).toString('base64'),
     refreshToken: crypto.randomBytes(30).toString('base64'),
     accessTokenValidUntil: new Date(Date.now() + ACCESS_TOKEN_TTL),
@@ -160,3 +160,40 @@ export const resetPassword = async ({ token, password }) => {
     throw error;
   }
 };
+
+export async function loginOrRegisterUser(payload) {
+  // Пошук користувача в базі за електронною поштою
+  let user = await User.findOne({ email: payload.email });
+  if (user === null) {
+    const password = await bcrypt.hash(
+      crypto.randomBytes(30).toString('base64'),
+      10,
+    );
+    // Створення нового користувача, якщо він не знайдений
+    const createdUser = await User.create({
+      name: payload.name || 'Anonymous',
+      email: payload.email,
+      password,
+      // avatarUrl: picture || ' ', // аватарка користувача
+    });
+
+    // Створення нової сесії
+    return Session.create({
+      userId: createdUser._id,
+      accessToken: crypto.randomBytes(30).toString('base64'),
+      refreshToken: crypto.randomBytes(30).toString('base64'),
+      accessTokenValidUntil: new Date(Date.now() + ACCESS_TOKEN_TTL),
+      refreshTokenValidUntil: new Date(Date.now() + REFRESH_TOKEN_TTL),
+    });
+  }
+
+  await Session.deleteOne({ userId: user._id });
+
+  return Session.create({
+    userId: user._id,
+    accessToken: crypto.randomBytes(30).toString('base64'),
+    refreshToken: crypto.randomBytes(30).toString('base64'),
+    accessTokenValidUntil: new Date(Date.now() + ACCESS_TOKEN_TTL),
+    refreshTokenValidUntil: new Date(Date.now() + REFRESH_TOKEN_TTL),
+  });
+}
