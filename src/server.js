@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import env from './utils/env.js';
 import pinoHttp from 'pino-http';
+import { swaggerDocs } from './middlewares/swaggerDocs.js';
 
 import greetingsRouter from './routers/greetings.js';
 import contactRoutes from './routers/contacts.js';
@@ -25,6 +26,7 @@ const setupServer = () => {
   app.use('/auth', authRoutes);
   app.use('/contacts', auth, contactRoutes);
   app.use('/uploads', express.static(UPLOAD_DIR));
+  app.use('/api-docs', swaggerDocs());
 
   app.use(
     pinoHttp({
