@@ -61,7 +61,7 @@ responses:
                 data:
                   type: array
                   items:
-                    $ref: ..\..\componets\schemas\contact.yaml
+                    $ref: '../../components/schemas/contact.yaml'
                 page:
                   type: number
                   example: 2
@@ -81,6 +81,6 @@ responses:
                   type: boolean
                   example: true
   '401':
-    $ref: ..\..\componets\responses\401.yaml
+    $ref: '../../components/responses/401.yaml'
   '500':
     description: 'Server error.'
